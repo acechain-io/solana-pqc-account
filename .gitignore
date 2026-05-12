@@ -12,6 +12,7 @@ dist/
 .cache/
 yarn-error.log
 npm-debug.log*
+next-env.d.ts
 
 # Build artifacts
 ace-account-kit/app/dist/
