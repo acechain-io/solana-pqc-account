@@ -1,0 +1,30 @@
+[workspace]
+members = [
+    "programs/*",
+]
+# Note: aggregator/, api/, and sdk/ are excluded from this workspace.
+# They depend on zk-ace which requires nightly Rust, while the on-chain
+# program uses Solana platform-tools. Build them independently.
+exclude = [
+    "aggregator",
+    "api",
+    "sdk/*",
+    "circuits/*",
+]
+resolver = "2"
+
+[workspace.dependencies]
+anchor-lang = "0.31.1"
+
+# Pin blake3 to avoid constant_time_eq 0.4.x which requires edition2024
+[workspace.dependencies.blake3]
+version = "=1.6.1"
+
+[profile.release]
+overflow-checks = true
+lto = "fat"
+codegen-units = 1
+[profile.release.build-override]
+opt-level = 3
+incremental = false
+codegen-units = 1

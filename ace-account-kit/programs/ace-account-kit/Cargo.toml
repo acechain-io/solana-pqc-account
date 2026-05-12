@@ -1,0 +1,21 @@
+[package]
+name = "solaa"
+version = "0.2.0"
+description = "ZK-ACE + AR-ACE: PQC-ready account abstraction for Solana"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "solaa"
+
+[features]
+default = []
+cpi = ["no-entrypoint"]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+idl-build = ["anchor-lang/idl-build"]
+
+[dependencies]
+anchor-lang = { version = "0.31.1", features = ["init-if-needed"] }
+ed25519-dalek = { version = "2", default-features = false, features = ["fast"] }

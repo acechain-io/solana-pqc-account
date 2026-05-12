@@ -1,0 +1,27 @@
+[workspace]
+
+[package]
+name = "solaa-sdk"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["lib"]
+
+[dependencies]
+anchor-client = "0.31.1"
+solana-sdk = "2.1"
+solana-client = "2.1"
+bip39 = "2.1"
+argon2 = "0.5"
+aes-gcm-siv = "0.11"
+hkdf = "0.12"
+sha2 = "0.10"
+hmac = "0.12"
+hex = "0.4"
+rand = "0.8"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "1"
+ed25519-dalek = { version = "2", features = ["rand_core"] }
+zk-ace = { path = "../../../../dev.zk-ace" }

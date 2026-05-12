@@ -1,0 +1,23 @@
+[workspace]
+
+[package]
+name = "zk-ace-circuit"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "extract_circuit_id"
+path = "src/bin/extract_circuit_id.rs"
+
+[[bin]]
+name = "prove_test"
+path = "src/bin/prove_test.rs"
+
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]
+zk-ace = { path = "../../../../dev.zk-ace" }
+sha2 = "0.10"
+hex = "0.4"
