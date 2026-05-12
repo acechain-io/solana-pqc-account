@@ -1,0 +1,50 @@
+# Rust / Solana
+target/
+**/*.rs.bk
+.anchor/
+test-ledger/
+
+# Node
+node_modules/
+.next/
+out/
+dist/
+.cache/
+yarn-error.log
+npm-debug.log*
+
+# Build artifacts
+ace-account-kit/app/dist/
+ace-account-kit/api/target/
+circuits/*/target/
+sdk/target/
+aggregator/target/
+
+# Secrets / keys
+*.json.bak
+deploy/solana-order-signer.json
+.env
+.env.local
+.env.*.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+
+# gstack
+.gstack/
+*.swp
+*.swo
+
+# PDF build artifacts (keep source, ignore aux files)
+docs/*.aux
+docs/*.log
+docs/*.out
+docs/*.toc
+docs/*.synctex.gz
+docs/*.fls
+docs/*.fdb_latexmk

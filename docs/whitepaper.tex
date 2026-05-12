@@ -1,0 +1,466 @@
+\documentclass[11pt, a4paper]{article}
+
+% ── Packages ──────────────────────────────────────────────────────────────────
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{fontenc}
+\usepackage{inputenc}
+% microtype disabled: font expansion incompatibility
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{listings}
+\usepackage{caption}
+\usepackage{multicol}
+\usepackage{setspace}
+
+% ── Colors ────────────────────────────────────────────────────────────────────
+\definecolor{solana-purple}{HTML}{9945FF}
+\definecolor{solana-green}{HTML}{14F195}
+\definecolor{solana-cyan}{HTML}{22D3EE}
+\definecolor{dark-bg}{HTML}{0F0F15}
+\definecolor{dark-card}{HTML}{18181B}
+\definecolor{text-muted}{HTML}{71717A}
+\definecolor{text-secondary}{HTML}{A1A1AA}
+
+% ── Hyperref setup ────────────────────────────────────────────────────────────
+\hypersetup{
+  colorlinks=true,
+  linkcolor=solana-purple,
+  urlcolor=solana-cyan,
+  citecolor=solana-green,
+  pdftitle={SolAA: Zero-Movement PQC-Ready Account Abstraction for Solana},
+  pdfauthor={Jason Wang},
+  pdfsubject={Post-Quantum Cryptography, Solana, Account Abstraction},
+}
+
+% ── Section formatting ────────────────────────────────────────────────────────
+\titleformat{\section}
+  {\large\bfseries\color{solana-purple}}
+  {\thesection.}{0.75em}{}[\vspace{-0.5em}\rule{\linewidth}{0.4pt}\vspace{0.2em}]
+
+\titleformat{\subsection}
+  {\normalsize\bfseries\color{solana-cyan}}
+  {\thesubsection}{0.5em}{}
+
+\titleformat{\subsubsection}
+  {\normalsize\itshape\color{text-secondary}}
+  {\thesubsubsection}{0.5em}{}
+
+% ── Header / footer ───────────────────────────────────────────────────────────
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{text-muted}SolAA Whitepaper}
+\fancyhead[R]{\small\color{text-muted}v1.0 --- May 2026}
+\fancyfoot[C]{\small\color{text-muted}\thepage}
+\renewcommand{\headrulewidth}{0.2pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{text-muted}\leaders\hrule height \headrulewidth\hfill}}
+
+% ── Callout box ───────────────────────────────────────────────────────────────
+\usepackage{tcolorbox}
+\tcbuselibrary{skins}
+
+\newtcolorbox{calloutbox}{
+  colback=solana-purple!5,
+  colframe=solana-purple,
+  boxrule=0.8pt,
+  arc=4pt,
+  left=10pt, right=10pt, top=8pt, bottom=8pt,
+  before skip=12pt, after skip=8pt,
+}
+
+\newtcolorbox{greenbox}{
+  colback=solana-green!5,
+  colframe=solana-green,
+  boxrule=0.8pt,
+  arc=4pt,
+  left=10pt, right=10pt, top=8pt, bottom=8pt,
+  before skip=12pt, after skip=8pt,
+}
+
+% ── List style ────────────────────────────────────────────────────────────────
+\setlist[itemize]{leftmargin=1.5em, itemsep=2pt, parsep=0pt}
+\setlist[enumerate]{leftmargin=1.5em, itemsep=2pt, parsep=0pt}
+
+% ── Document ─────────────────────────────────────────────────────────────────
+\begin{document}
+
+% ── Title page ────────────────────────────────────────────────────────────────
+\begin{titlepage}
+  \centering
+  \vspace*{2cm}
+
+  {\Huge\bfseries\color{solana-purple} Sol\color{solana-green}AA}
+
+  \vspace{0.75cm}
+  {\LARGE\bfseries Zero-Movement PQC-Ready\\Account Abstraction for Solana}
+
+  \vspace{0.5cm}
+  \rule{0.6\linewidth}{0.4pt}
+
+  \vspace{1cm}
+  {\large Jason Wang \quad \textit{Cryptography Researcher}}\\[0.3em]
+  {\color{text-muted}\small \href{https://solaa.hfi.network}{solaa.hfi.network}}
+
+  \vspace{0.75cm}
+  {\color{text-muted} May 2026 \quad v1.0}
+
+  \vspace{2cm}
+
+  \begin{abstract}
+    \noindent
+    SolAA is a production-ready account abstraction framework for Solana that delivers
+    three capabilities simultaneously: \textbf{(1)} zero-movement key migration to
+    post-quantum cryptography (ML-DSA-44), \textbf{(2)} ZK-proof-authorized smart account
+    execution without Ed25519 signatures, and \textbf{(3)} trustless cross-chain ownership
+    proofs without bridges. Unlike every prior account abstraction proposal, SolAA requires
+    zero asset movement, zero new wallet creation, and zero transaction cost for the security
+    upgrade itself. The entire \$200B+ Solana ecosystem is addressable on day one. This paper
+    describes the protocol design, on-chain architecture, cryptographic foundations, and
+    business rationale.
+  \end{abstract}
+
+  \vfill
+
+  \begin{calloutbox}
+    \textbf{Live Demo:} \href{https://solaa.hfi.network/demo/}{solaa.hfi.network/demo/}\\
+    \textbf{Research:} 7 arXiv preprints (arXiv:2511.20505 and related)\\
+    \textbf{Deployed:} Solana Devnet --- Program \texttt{EgKrUBUsQjC7BZ7xJGNLkDPP5UnvQ1u9Ldx7uRThNmL5}
+  \end{calloutbox}
+\end{titlepage}
+
+% ── TOC ───────────────────────────────────────────────────────────────────────
+\tableofcontents
+\newpage
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Executive Summary}
+% ─────────────────────────────────────────────────────────────────────────────
+
+Crypto wallets today work like a house with one lock and no spare key. If someone steals
+your key --- or if a future quantum computer can copy any key ever made --- your assets are
+gone forever. There is no way to change the lock without moving to a new house.
+
+SolAA changes this. It lets Solana users upgrade to quantum-resistant security \textit{without
+moving a single token, creating a new wallet, or paying any migration fee.} The wallet
+address stays the same. The on-chain history stays intact. But the underlying security becomes
+mathematically unbreakable --- even by quantum computers.
+
+Beyond individual users, SolAA introduces two capabilities that do not exist anywhere on
+Solana today:
+
+\begin{itemize}
+  \item \textbf{Smart accounts} authorized by zero-knowledge proofs rather than private keys,
+    enabling programmable, recoverable, quantum-safe execution.
+  \item \textbf{Cross-chain identity proofs} that let a Solana wallet prove ownership of
+    accounts on Ethereum, Tron, or any other blockchain --- without bridges, without fees,
+    and without trusting any intermediary.
+\end{itemize}
+
+\begin{calloutbox}
+  \textbf{The one-sentence pitch:} SolAA is the security upgrade layer that makes every
+  existing Solana wallet quantum-safe and interoperable --- with no migration required.
+\end{calloutbox}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{The Problem}
+% ─────────────────────────────────────────────────────────────────────────────
+
+\subsection{Permanent Key Vulnerability}
+
+Every Solana wallet today is controlled by a single Ed25519 private key. This creates
+three compounding risks:
+
+\begin{enumerate}
+  \item \textbf{Irrecoverable compromise.} If a private key is leaked --- through malware,
+    phishing, a compromised backup, or a supply chain attack --- the account is permanently
+    lost. There is no mechanism to revoke the old key and issue a new one without moving
+    all assets.
+
+  \item \textbf{Quantum threat.} Shor's algorithm running on a sufficiently capable quantum
+    computer can derive an Ed25519 private key from its public key in polynomial time.
+    NIST finalized post-quantum cryptography standards in 2024 (FIPS 204 / ML-DSA).
+    Financial regulators in the US, EU, and China are actively drafting mandates.
+
+  \item \textbf{Single point of failure.} A seed phrase written on paper, stored in a
+    password manager, or memorized is the only recovery path. Loss means permanent
+    loss.
+\end{enumerate}
+
+\subsection{The Migration Tax}
+
+Existing solutions to the above problems --- hardware wallets, multisig, EVM-style account
+abstraction (ERC-4337) --- all share the same fundamental flaw: they require users to
+\textit{migrate assets to a new address}. This creates:
+
+\begin{itemize}
+  \item Taxable events in most jurisdictions
+  \item Loss of on-chain history (NFT provenance, DeFi reputation, governance records)
+  \item High friction --- most users never do it
+  \item Protocol-level complexity for dApps that track wallet addresses
+\end{itemize}
+
+\subsection{Cross-Chain Identity is Broken}
+
+As of 2026, proving that a Solana wallet and an Ethereum wallet belong to the same person
+requires either (a) bridging assets between chains --- costing gas, time, and carrying
+\$2.5B+ in historical hack risk --- or (b) trusting a centralized attestation service.
+Neither is acceptable for high-value use cases like institutional KYC, cross-chain DAO
+voting, or multichain airdrop eligibility.
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{The SolAA Solution}
+% ─────────────────────────────────────────────────────────────────────────────
+
+SolAA solves all three problems through a single unified architecture with three layers.
+
+\subsection{Layer 1: Zero-Movement Key Upgrade (SA-Migration)}
+
+The user's existing seed phrase is encapsulated into a \textbf{REV32 Sealed Artifact}:
+an AES-256-GCM-SIV encrypted blob derived via Argon2id (memory: 4 MB, iterations: 3)
+from a user-supplied passphrase. The resulting \texttt{id\_com} (identity commitment) is
+a 32-byte cryptographic commitment that:
+
+\begin{itemize}
+  \item Preserves the user's existing Solana address (no asset movement)
+  \item Acts as the root of the post-quantum key hierarchy
+  \item Is the seed for all downstream SolAA operations
+\end{itemize}
+
+\begin{greenbox}
+  \textbf{Key property:} The identity commitment is derived from the user's existing
+  mnemonic, so the \textit{same wallet address} is preserved. Zero transactions are
+  broadcast. Zero gas is spent. The upgrade is entirely client-side until the user
+  explicitly creates an on-chain smart account.
+\end{greenbox}
+
+\subsection{Layer 2: ZK-Authorized Smart Account}
+
+A Program Derived Address (PDA) is created on-chain with the following properties:
+
+\begin{center}
+\begin{tabular}{ll}
+  \toprule
+  \textbf{Property} & \textbf{Value} \\
+  \midrule
+  Address derivation & \texttt{["solaa", id\_com[0..32]]} \\
+  Authorization & Groth16 ZK proof (128 bytes) \\
+  Verification cost & $\approx$170,000 compute units \\
+  Key rotation & Supported, same address retained \\
+  Recovery delay & 1,512,000 slots ($\approx$7 days) \\
+  Nonce & Replay-proof, increments per instruction \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\vspace{0.5em}
+The account is authorized by a \textbf{ZK-ACE proof} (zero-knowledge authorization circuit)
+rather than an Ed25519 signature. This means:
+
+\begin{itemize}
+  \item The private key never touches the transaction
+  \item Authorization is programmable (time-locks, spending limits, social recovery)
+  \item A 128-byte Groth16 proof replaces a 2,420-byte ML-DSA-44 signature on the wire
+\end{itemize}
+
+\subsubsection{Key Rotation}
+
+Users can rotate to a new ML-DSA-44 (post-quantum) key at any time. The rotation instruction:
+
+\begin{enumerate}
+  \item Verifies a ZK proof of knowledge of the old \texttt{id\_com}
+  \item Replaces the on-chain authority with the new PQC public key
+  \item Bumps the account nonce to invalidate any pending operations
+  \item Preserves the PDA address --- no migration required
+\end{enumerate}
+
+\subsection{Layer 3: Cross-Chain Ownership Proof (ZK-Ownership)}
+
+SolAA generates a \textbf{ZK-STARK proof} that encodes:
+
+\begin{itemize}
+  \item The user's Solana \texttt{id\_com}
+  \item A target foreign address (e.g., an Ethereum \texttt{0x...} address)
+  \item A foreign chain ID
+\end{itemize}
+
+All three are \textit{public inputs} to the circuit. Any verifier --- on any chain that
+supports the ZK-ACE verifier contract --- can confirm the proof without learning the
+user's private key or seed phrase.
+
+\begin{calloutbox}
+  \textbf{What this enables:} Cross-chain airdrops, multichain DAO voting, unified KYC,
+  and interoperable DeFi reputation --- all from a single Solana wallet, with no bridges,
+  no wrapped assets, and no trusted intermediaries.
+\end{calloutbox}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Technical Architecture}
+% ─────────────────────────────────────────────────────────────────────────────
+
+\subsection{On-Chain Program}
+
+The SolAA Anchor program (deployed at \texttt{EgKrUBUs\ldots}) exposes five instructions:
+
+\begin{center}
+\begin{tabular}{lp{9cm}}
+  \toprule
+  \textbf{Instruction} & \textbf{Description} \\
+  \midrule
+  \texttt{create\_account} & Initializes a PDA smart account from an \texttt{id\_com} \\
+  \texttt{execute} & Executes an authorized CPI payload given a valid ZK proof \\
+  \texttt{rotate\_key} & Rotates the PQC authority key, preserving the PDA address \\
+  \texttt{initiate\_recovery} & Begins time-locked VA-DAR recovery process \\
+  \texttt{verify\_ownership} & Records a cross-chain ownership proof on-chain \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{ZK-ACE Circuit}
+
+The authorization circuit is implemented in Stwo (Rust), a STARK-based proving system.
+For the demo, proofs are generated server-side via the Axum API and verified on-chain
+via the alt\_bn128 pairing precompile. Circuit statistics:
+
+\begin{itemize}
+  \item Constraints: $\approx$4,024 R1CS
+  \item Proof size: 128 bytes (Groth16)
+  \item Proving time: $\approx$52 ms (server-side)
+  \item On-chain verification: $\approx$170,000 CU
+\end{itemize}
+
+\subsection{Cryptographic Primitives}
+
+\begin{center}
+\begin{tabular}{lll}
+  \toprule
+  \textbf{Component} & \textbf{Primitive} & \textbf{Standard} \\
+  \midrule
+  Key derivation & Argon2id & RFC 9106 \\
+  Symmetric encryption & AES-256-GCM-SIV & RFC 8452 \\
+  PQC signature & ML-DSA-44 & NIST FIPS 204 \\
+  ZK proof system & Groth16 / STARK & Stwo \\
+  Hash & SHA-256 & FIPS 180-4 \\
+  Elliptic curve pairing & alt\_bn128 & Solana precompile \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Business Case}
+% ─────────────────────────────────────────────────────────────────────────────
+
+\subsection{Market Size}
+
+\begin{itemize}
+  \item \textbf{\$200B+ in Solana assets} can upgrade to quantum-safe security without
+    any migration cost. The addressable market is every existing Solana user.
+  \item \textbf{600M+ crypto users globally} will eventually need PQC-safe wallets as
+    regulations tighten. SolAA is the only zero-friction path on Solana.
+  \item \textbf{Cross-chain identity} is a \$50B+ opportunity currently served only by
+    fragile bridge infrastructure.
+\end{itemize}
+
+\subsection{Why Now}
+
+\begin{enumerate}
+  \item \textbf{NIST finalized PQC standards (2024).} The regulatory clock is running.
+    Financial institutions are already receiving guidance to begin PQC migration.
+  \item \textbf{Bridge hacks continue.} \$2.5B+ lost since 2021. Every high-profile
+    bridge hack increases demand for bridge-free cross-chain solutions.
+  \item \textbf{Account abstraction is a hot category.} ERC-4337 proved the demand.
+    SolAA brings it to Solana with a materially better migration story.
+\end{enumerate}
+
+\subsection{Competitive Differentiation}
+
+\begin{center}
+\begin{tabular}{lccc}
+  \toprule
+  \textbf{Feature} & \textbf{SolAA} & \textbf{ERC-4337} & \textbf{Traditional Multisig} \\
+  \midrule
+  Zero asset migration & \checkmark & $\times$ & $\times$ \\
+  PQC-ready (day one) & \checkmark & $\times$ & $\times$ \\
+  Key rotation (same addr) & \checkmark & $\times$ & $\times$ \\
+  Cross-chain identity & \checkmark & $\times$ & $\times$ \\
+  No bridge required & \checkmark & N/A & N/A \\
+  Solana-native & \checkmark & $\times$ & Partial \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Research Foundation}
+% ─────────────────────────────────────────────────────────────────────────────
+
+Every design decision in SolAA is grounded in published cryptographic research.
+The following papers form the theoretical basis of the protocol:
+
+\begin{center}
+\begin{tabular}{lll}
+  \toprule
+  \textbf{Paper} & \textbf{Reference} & \textbf{Contribution} \\
+  \midrule
+  ACE-GF & arXiv:2511.20505 & Identity derivation framework \\
+  ZK-ACE & arXiv:2603.07974 & ZK authorization for PQC \\
+  AR-ACE & arXiv:2603.07982 & Proof-off-path relay architecture \\
+  VA-DAR & arXiv:2603.02690 & Decentralized address recovery \\
+  CT-DAP & arXiv:2603.07933 & Destroyable authorization paths \\
+  ACE Runtime & arXiv:2603.10242 & Sub-second finality blockchain runtime \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Roadmap}
+% ─────────────────────────────────────────────────────────────────────────────
+
+\begin{enumerate}
+  \item \textbf{Q2 2026 --- Devnet launch (current).}
+    Full demo live at \href{https://solaa.hfi.network/demo/}{solaa.hfi.network/demo/}.
+    All five on-chain instructions deployed and functional.
+
+  \item \textbf{Q3 2026 --- SDK \& integrations.}
+    Open-source TypeScript SDK. Integration guides for major Solana dApps.
+    WASM-compiled ZK prover for client-side proof generation.
+
+  \item \textbf{Q4 2026 --- Mainnet beta.}
+    Security audit. Mainnet deployment. First institutional partners.
+
+  \item \textbf{2027 --- Cross-chain verifier rollout.}
+    Deploy ZK-ACE verifier contracts on Ethereum and Tron.
+    Enable live cross-chain identity proofs.
+
+  \item \textbf{2027+ --- Protocol governance.}
+    Decentralized upgrade authority. Community governance for circuit upgrades.
+\end{enumerate}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Conclusion}
+% ─────────────────────────────────────────────────────────────────────────────
+
+SolAA is not a theoretical proposal. It is a working system, live on Solana Devnet,
+with a full-stack demo, an Anchor on-chain program, a Rust API server, and a research
+foundation built on seven published cryptographic papers.
+
+The window for establishing the PQC-safe account abstraction standard on Solana is
+open now --- before regulatory mandates force a chaotic, expensive migration. SolAA
+offers the only path that upgrades every existing user with zero friction.
+
+\begin{greenbox}
+  \textbf{Try the demo:} \href{https://solaa.hfi.network/demo/}{solaa.hfi.network/demo/}\\
+  \textbf{Contact:} \href{mailto:zwanjas@gmail.com}{zwanjas@gmail.com}
+\end{greenbox}
+
+\vspace{2em}
+\noindent\color{text-muted}\small
+This document is provided for informational purposes. Protocol parameters and timelines
+are subject to change. Nothing herein constitutes financial or legal advice.
+
+\end{document}

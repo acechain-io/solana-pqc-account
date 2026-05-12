@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="48" x2="48" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#9945FF"/>
+      <stop offset="100%" stop-color="#14F195"/>
+    </linearGradient>
+    <linearGradient id="glow" x1="0" y1="48" x2="48" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#9945FF" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#14F195" stop-opacity="0.3"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Outer hexagon (quantum circuit shape) -->
+  <path d="M24 2 L43 12.5 L43 35.5 L24 46 L5 35.5 L5 12.5 Z" fill="url(#bg)"/>
+
+  <!-- Inner subtle hexagon ring for depth -->
+  <path d="M24 7 L39 15.5 L39 32.5 L24 41 L9 32.5 L9 15.5 Z"
+        fill="none" stroke="white" stroke-width="0.5" opacity="0.15"/>
+
+  <!-- Stylised S — two arcs joined, with circuit-node terminals -->
+  <!-- Top arc: curves right -->
+  <path d="M17 18 C17 14.5 21 13 24 13 C27 13 31 14.5 31 18 C31 21.5 27 23 24 23 C21 23 17 24.5 17 28 C17 31.5 21 33 24 33 C27 33 31 31.5 31 28"
+        stroke="white" stroke-width="2.8" stroke-linecap="round" fill="none"/>
+
+  <!-- Terminal nodes (quantum circuit pins) -->
+  <circle cx="17" cy="18" r="2.2" fill="white"/>
+  <circle cx="31" cy="28" r="2.2" fill="white"/>
+
+  <!-- Cross tick marks on terminals (circuit symbol) -->
+  <line x1="17" y1="14.5" x2="17" y2="21.5" stroke="white" stroke-width="1.2" opacity="0.5" stroke-linecap="round"/>
+  <line x1="13.5" y1="18" x2="20.5" y2="18" stroke="white" stroke-width="1.2" opacity="0.5" stroke-linecap="round"/>
+  <line x1="31" y1="24.5" x2="31" y2="31.5" stroke="white" stroke-width="1.2" opacity="0.5" stroke-linecap="round"/>
+  <line x1="27.5" y1="28" x2="34.5" y2="28" stroke="white" stroke-width="1.2" opacity="0.5" stroke-linecap="round"/>
+</svg>
